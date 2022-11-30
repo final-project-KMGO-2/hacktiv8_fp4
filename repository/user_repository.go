@@ -12,7 +12,8 @@ type UserRepository interface {
 	GetUserByEmail(ctx context.Context, email string) (entity.User, error)
 	GetUserById(ctx context.Context, id uint64) (entity.User, error)
 	GetUserByUsername(ctx context.Context, username string) (entity.User, error)
-	UpdateUser(ctx context.Context, user entity.User) (entity.User, error)
+	GetUserBalance(ctx context.Context, userID uint64) (uint64, error)
+	UpdateUserBalance(ctx context.Context, userID uint64, amount uint64) error
 	DeleteUser(ctx context.Context, userID uint64) error
 }
 
@@ -62,13 +63,23 @@ func (db *userConnection) GetUserByUsername(ctx context.Context, username string
 	return user, nil
 }
 
-func (db *userConnection) UpdateUser(ctx context.Context, user entity.User) (entity.User, error) {
-	tx := db.connection.Save(&user)
+func (db *userConnection) UpdateUserBalance(ctx context.Context, userID uint64, amount uint64) error {
+	tx := db.connection.Model(&entity.User{}).Where(("id = "), userID).Update("amount", gorm.Expr("balance + ?", amount))
 	if tx.Error != nil {
-		return entity.User{}, tx.Error
+		return tx.Error
 	}
 
-	return user, nil
+	return nil
+}
+
+func (db *userConnection) GetUserBalance(ctx context.Context, userID uint64) (uint64, error) {
+	var balance uint64
+	tx := db.connection.Table("users").Select("balance").Where(("id = ?"), userID).Find(&balance)
+	if tx.Error != nil {
+		return 0, nil
+	}
+
+	return balance, nil
 }
 
 func (db *userConnection) DeleteUser(ctx context.Context, userID uint64) error {

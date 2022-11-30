@@ -12,6 +12,7 @@ type User struct {
 	Email    string `json:"email"`
 	Password string `json:"-"`
 	Role     string `json:"-"`
+	Balance  uint64 `json:"balance"`
 	BaseModel
 }
 
@@ -22,10 +23,8 @@ type UserRegister struct {
 	Role     string `json:"role" binding:"required"`
 }
 
-type UserUpdate struct {
-	ID       uint64 `json:"id"`
-	FullName string `json:"full_name" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
+type UserUpdateBalance struct {
+	Balance uint64 `json:"balance" binding:"required,min=0,max=100000000"`
 }
 
 type UserLogin struct {
