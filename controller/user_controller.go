@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"hacktiv8_fp_2/common"
 	"hacktiv8_fp_2/entity"
 	"hacktiv8_fp_2/service"
@@ -13,7 +14,7 @@ import (
 type UserController interface {
 	Register(ctx *gin.Context)
 	Login(ctx *gin.Context)
-	UpdateUser(ctx *gin.Context)
+	UpdateUserBalance(ctx *gin.Context)
 	DeleteUser(ctx *gin.Context)
 }
 
@@ -89,9 +90,9 @@ func (c *userController) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (c *userController) UpdateUser(ctx *gin.Context) {
-	var userUpdate entity.UserUpdate
-	errBind := ctx.ShouldBind(&userUpdate)
+func (c *userController) UpdateUserBalance(ctx *gin.Context) {
+	var userUpdateBalance entity.UserUpdateBalance
+	errBind := ctx.ShouldBind(&userUpdateBalance)
 
 	if errBind != nil {
 		response := common.BuildErrorResponse("Failed to process request", errBind.Error(), common.EmptyObj{})
@@ -101,14 +102,13 @@ func (c *userController) UpdateUser(ctx *gin.Context) {
 
 	token := ctx.MustGet("token").(string)
 	userID, _ := c.jwtService.GetUserIDByToken(token)
-	userUpdate.ID = uint64(userID)
-	result, err := c.userService.UpdateUser(ctx.Request.Context(), userUpdate)
+	balance, err := c.userService.UpdateUserBalance(ctx.Request.Context(), userID, userUpdateBalance.Balance)
 	if err != nil {
-		res := common.BuildErrorResponse("Failed to update user", err.Error(), common.EmptyObj{})
+		res := common.BuildErrorResponse("Failed to update user balance", err.Error(), common.EmptyObj{})
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
-
+	result := fmt.Sprintf("Your balance has been successfully updated to Rp%v", balance)
 	res := common.BuildResponse(true, "OK", result)
 	ctx.JSON(http.StatusOK, res)
 }
