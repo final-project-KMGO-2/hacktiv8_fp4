@@ -25,18 +25,21 @@ func main() {
 		log.Println(err)
 	}
 	var (
-		db             *gorm.DB                  = config.SetupDatabaseConnection()
-		userRepository repository.UserRepository = repository.NewUserRepository(db)
+		db                           *gorm.DB                                = config.SetupDatabaseConnection()
+		userRepository               repository.UserRepository               = repository.NewUserRepository(db)
+		transactionHistoryRepository repository.TransactionHistoryRepository = repository.NewTransactionHistoryRepository(db)
 		// categoryRepository repository.CategoryRepository = repository.NewCategoryRepository(db)
 		// taskRepository     repository.TaskRepository     = repository.NewTaskRepository(db)
 
-		jwtService  service.JWTService  = service.NewJWTService()
-		userService service.UserService = service.NewUserService(userRepository)
-		authService service.AuthService = service.NewAuthService(userRepository)
+		jwtService                service.JWTService                = service.NewJWTService()
+		userService               service.UserService               = service.NewUserService(userRepository)
+		authService               service.AuthService               = service.NewAuthService(userRepository)
+		transactionHistoryService service.TransactionHistoryService = service.NewTransactionHistoryService(transactionHistoryRepository)
 		// categoryService service.CategoryService = service.NewCategoryService(categoryRepository)
 		// taskService     service.TaskService     = service.NewTaskService(taskRepository, userRepository, categoryRepository)
 
-		authController controller.UserController = controller.NewUserController(userService, authService, jwtService)
+		authController               controller.UserController               = controller.NewUserController(userService, authService, jwtService)
+		transactionHistoryController controller.TransactionHistoryController = controller.NewTransactionHistoryController(transactionHistoryService, jwtService)
 		// categoryController controller.CategoryController = controller.NewCategoryController(categoryService, jwtService)
 		// taskController     controller.TaskController     = controller.NewTaskController(taskService, jwtService)
 	)
@@ -46,6 +49,7 @@ func main() {
 	server := gin.Default()
 
 	routes.UserRoutes(server, authController, jwtService)
+	routes.TransactionHistoryRoutes(server, transactionHistoryController, jwtService)
 	// routes.CategoryRoutes(server, categoryController, jwtService)
 	// routes.TaskRoutes(server, taskController, jwtService, taskService)
 
