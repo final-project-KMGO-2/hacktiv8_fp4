@@ -37,9 +37,16 @@ func (c *transactionHistoryController) CreateTransactionHistory(ctx *gin.Context
 		return
 	}
 
+	userID, ok := ctx.MustGet("userID").(uint64)
+	if !ok {
+		response := common.BuildErrorResponse("Failed to get transaction history", "userID not found", common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+	transactionHistory.UserID = userID
 	result, err := c.transactionHistoryService.CreateTransactionHistory(ctx.Request.Context(), transactionHistory)
 	if err != nil {
-		response := common.BuildErrorResponse("Failed to create transaction history", errBind.Error(), common.EmptyObj{})
+		response := common.BuildErrorResponse("Failed to create transaction history", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
@@ -61,8 +68,12 @@ func (c *transactionHistoryController) GetAllTransactionHistory(ctx *gin.Context
 }
 
 func (c *transactionHistoryController) GetTransactionHistoryByUserID(ctx *gin.Context) {
-	token := ctx.MustGet("token").(string)
-	userID, _ := c.jwtService.GetUserIDByToken(token)
+	userID, ok := ctx.MustGet("userID").(uint64)
+	if !ok {
+		response := common.BuildErrorResponse("Failed to get transaction history", "userID not found", common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
 	result, err := c.transactionHistoryService.GetTransactionHistoryByUserID(ctx.Request.Context(), userID)
 	if err != nil {
 		response := common.BuildErrorResponse("Failed to get transaction history", err.Error(), common.EmptyObj{})

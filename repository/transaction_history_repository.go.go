@@ -8,6 +8,9 @@ import (
 )
 
 type TransactionHistoryRepository interface {
+	BeginTx(ctx context.Context) (*gorm.DB, error)
+	CommitTx(ctx context.Context, tx *gorm.DB) error
+	RollbackTx(ctx context.Context, tx *gorm.DB)
 	CreateTransactionHistory(ctx context.Context, transactionHistory entity.TransactionHistory) (entity.TransactionHistory, error)
 	GetAllTransactionHistory(ctx context.Context) ([]entity.TransactionHistory, error)
 	GetTransactionHistoryByUserID(ctx context.Context, userID uint64) ([]entity.TransactionHistory, error)
@@ -21,6 +24,28 @@ func NewTransactionHistoryRepository(db *gorm.DB) TransactionHistoryRepository {
 	return &transactionHistoryConnection{
 		connection: db,
 	}
+}
+
+func (db *transactionHistoryConnection) BeginTx(ctx context.Context) (*gorm.DB, error) {
+	tx := db.connection.Begin()
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return tx, nil
+}
+
+func (db *transactionHistoryConnection) CommitTx(ctx context.Context, tx *gorm.DB) error {
+	err := tx.Commit().Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *transactionHistoryConnection) RollbackTx(ctx context.Context, tx *gorm.DB) {
+	tx.Rollback()
 }
 
 func (db *transactionHistoryConnection) CreateTransactionHistory(ctx context.Context, transactionHistory entity.TransactionHistory) (entity.TransactionHistory, error) {

@@ -13,7 +13,8 @@ type UserRepository interface {
 	GetUserById(ctx context.Context, id uint64) (entity.User, error)
 	GetUserByUsername(ctx context.Context, username string) (entity.User, error)
 	GetUserBalance(ctx context.Context, userID uint64) (uint64, error)
-	UpdateUserBalance(ctx context.Context, userID uint64, amount uint64) error
+	IncreaseUserBalance(ctx context.Context, userID uint64, amount uint64) error
+	ReduceUserBalance(ctx context.Context, userID uint64, amount uint64) error
 	DeleteUser(ctx context.Context, userID uint64) error
 }
 
@@ -63,8 +64,17 @@ func (db *userConnection) GetUserByUsername(ctx context.Context, username string
 	return user, nil
 }
 
-func (db *userConnection) UpdateUserBalance(ctx context.Context, userID uint64, amount uint64) error {
-	tx := db.connection.Model(&entity.User{}).Where(("id = "), userID).Update("amount", gorm.Expr("balance + ?", amount))
+func (db *userConnection) IncreaseUserBalance(ctx context.Context, userID uint64, amount uint64) error {
+	tx := db.connection.Model(&entity.User{}).Where(("id = ?"), userID).UpdateColumn("balance", gorm.Expr("balance + ?", amount))
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
+}
+
+func (db *userConnection) ReduceUserBalance(ctx context.Context, userID uint64, amount uint64) error {
+	tx := db.connection.Model(&entity.User{}).Where(("id = ?"), userID).UpdateColumn("balance", gorm.Expr("balance - ?", amount))
 	if tx.Error != nil {
 		return tx.Error
 	}

@@ -32,6 +32,9 @@ func SetupDatabaseConnection() *gorm.DB {
 
 	if err := db.AutoMigrate(
 		entity.User{},
+		entity.Product{},
+		entity.Category{},
+		entity.TransactionHistory{},
 	); err != nil {
 		panic(err)
 	}

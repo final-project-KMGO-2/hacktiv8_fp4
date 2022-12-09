@@ -1,37 +1,38 @@
 package repository
 
 import (
- 	"context"
- 	"hacktiv8_fp_2/entity"
+	"context"
+	"hacktiv8_fp_2/entity"
 
- 	"gorm.io/gorm"
+	"gorm.io/gorm"
 )
 
 type CategoryRepository interface {
- 	CreateCategory(ctx context.Context, category entity.Category) (entity.Category, error)
- 	GetCategory(ctx context.Context) ([]entity.Category, error)
- 	GetCategoryByID(ctx context.Context, id int) (entity.Category, error)
- 	PatchCategory(ctx context.Context, category entity.Category) (entity.Category, error)
- 	DeleteCategory(ctx context.Context, categoryID uint64) error
- }
+	CreateCategory(ctx context.Context, category entity.Category) (entity.Category, error)
+	GetCategory(ctx context.Context) ([]entity.Category, error)
+	GetCategoryByID(ctx context.Context, id int) (entity.Category, error)
+	IncreaseSoldProductAmount(ctx context.Context, categoryID uint64, amount uint64) error
+	PatchCategory(ctx context.Context, category entity.Category) (entity.Category, error)
+	DeleteCategory(ctx context.Context, categoryID uint64) error
+}
 
 type categoryConnection struct {
- 	connection *gorm.DB
- }
+	connection *gorm.DB
+}
 
 func NewCategoryRepository(db *gorm.DB) CategoryRepository {
- 	return &categoryConnection{
- 		connection: db,
- 	}
+	return &categoryConnection{
+		connection: db,
+	}
 }
 
 // CreateCategory implements CategoryRepository
 func (db *categoryConnection) CreateCategory(ctx context.Context, category entity.Category) (entity.Category, error) {
- 	tx := db.connection.Create(&category)
- 	if tx.Error != nil {
- 		return entity.Category{}, tx.Error
+	tx := db.connection.Create(&category)
+	if tx.Error != nil {
+		return entity.Category{}, tx.Error
 	}
- 	return category, nil
+	return category, nil
 }
 
 // GetCategory implements CategoryRepository
@@ -51,6 +52,14 @@ func (db *categoryConnection) GetCategoryByID(ctx context.Context, id int) (enti
 		return entity.Category{}, tx.Error
 	}
 	return category, nil
+}
+
+func (db *categoryConnection) IncreaseSoldProductAmount(ctx context.Context, categoryID uint64, amount uint64) error {
+	tx := db.connection.Model(&entity.Category{}).Where(("id = ?"), categoryID).UpdateColumn("sold_product_amount", gorm.Expr("sold_product_amount + ?", amount))
+	if tx.Error != nil {
+		return tx.Error
+	}
+	return nil
 }
 
 // PatchCategory implements CategoryRepository
