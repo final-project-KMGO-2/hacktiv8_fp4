@@ -11,7 +11,7 @@ import (
 type UserService interface {
 	CreateUser(ctx context.Context, user entity.UserRegister) (entity.User, error)
 	GetUserByEmail(ctx context.Context, email string) (entity.User, error)
-	UpdateUserBalance(ctx context.Context, userID uint64, amount uint64) (uint64, error)
+	IncreaseUserBalance(ctx context.Context, userID uint64, amount uint64) (uint64, error)
 	DeleteUser(ctx context.Context, userID uint64) error
 }
 
@@ -43,8 +43,8 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (entity.
 	return s.userRepository.GetUserByEmail(ctx, email)
 }
 
-func (s *userService) UpdateUserBalance(ctx context.Context, userID uint64, amount uint64) (uint64, error) {
-	err := s.userRepository.UpdateUserBalance(ctx, userID, amount)
+func (s *userService) IncreaseUserBalance(ctx context.Context, userID uint64, amount uint64) (uint64, error) {
+	err := s.userRepository.IncreaseUserBalance(ctx, userID, amount)
 	if err != nil {
 		return 0, err
 	}

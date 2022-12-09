@@ -16,7 +16,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"gorm.io/gorm"
 )
 
 func main() {
@@ -24,25 +23,21 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	var (
-		db                           *gorm.DB                                = config.SetupDatabaseConnection()
-		userRepository               repository.UserRepository               = repository.NewUserRepository(db)
-		transactionHistoryRepository repository.TransactionHistoryRepository = repository.NewTransactionHistoryRepository(db)
-		// categoryRepository repository.CategoryRepository = repository.NewCategoryRepository(db)
-		// taskRepository     repository.TaskRepository     = repository.NewTaskRepository(db)
 
-		jwtService                service.JWTService                = service.NewJWTService()
-		userService               service.UserService               = service.NewUserService(userRepository)
-		authService               service.AuthService               = service.NewAuthService(userRepository)
-		transactionHistoryService service.TransactionHistoryService = service.NewTransactionHistoryService(transactionHistoryRepository)
-		// categoryService service.CategoryService = service.NewCategoryService(categoryRepository)
-		// taskService     service.TaskService     = service.NewTaskService(taskRepository, userRepository, categoryRepository)
+	db := config.SetupDatabaseConnection()
+	userRepository := repository.NewUserRepository(db)
+	transactionHistoryRepository := repository.NewTransactionHistoryRepository(db)
+	productRepository := repository.NewProductRepo(db)
 
-		authController               controller.UserController               = controller.NewUserController(userService, authService, jwtService)
-		transactionHistoryController controller.TransactionHistoryController = controller.NewTransactionHistoryController(transactionHistoryService, jwtService)
-		// categoryController controller.CategoryController = controller.NewCategoryController(categoryService, jwtService)
-		// taskController     controller.TaskController     = controller.NewTaskController(taskService, jwtService)
-	)
+	jwtService := service.NewJWTService()
+	userService := service.NewUserService(userRepository)
+	authService := service.NewAuthService(userRepository)
+	transactionHistoryService := service.NewTransactionHistoryService(transactionHistoryRepository)
+	productService := service.NewProductService(productRepository)
+
+	authController := controller.NewUserController(userService, authService, jwtService)
+	transactionHistoryController := controller.NewTransactionHistoryController(transactionHistoryService, jwtService)
+	productController := controller.NewProductController(jwtService, productService)
 
 	defer config.CloseDatabaseConnection(db)
 	// gin.SetMode(gin.ReleaseMode)
@@ -50,12 +45,13 @@ func main() {
 
 	routes.UserRoutes(server, authController, jwtService)
 	routes.TransactionHistoryRoutes(server, transactionHistoryController, jwtService)
+	routes.GenerateProductRoutes(server, productController, jwtService)
 	// routes.CategoryRoutes(server, categoryController, jwtService)
 	// routes.TaskRoutes(server, taskController, jwtService, taskService)
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8082"
+		port = "8083"
 	}
 
 	srv := &http.Server{

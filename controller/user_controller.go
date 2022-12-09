@@ -100,9 +100,13 @@ func (c *userController) UpdateUserBalance(ctx *gin.Context) {
 		return
 	}
 
-	token := ctx.MustGet("token").(string)
-	userID, _ := c.jwtService.GetUserIDByToken(token)
-	balance, err := c.userService.UpdateUserBalance(ctx.Request.Context(), userID, userUpdateBalance.Balance)
+	userID, ok := ctx.MustGet("userID").(uint64)
+	if !ok {
+		response := common.BuildErrorResponse("Failed to get transaction history", "userID not found", common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+	balance, err := c.userService.IncreaseUserBalance(ctx.Request.Context(), userID, userUpdateBalance.Balance)
 	if err != nil {
 		res := common.BuildErrorResponse("Failed to update user balance", err.Error(), common.EmptyObj{})
 		ctx.JSON(http.StatusBadRequest, res)
@@ -114,8 +118,12 @@ func (c *userController) UpdateUserBalance(ctx *gin.Context) {
 }
 
 func (c *userController) DeleteUser(ctx *gin.Context) {
-	token := ctx.MustGet("token").(string)
-	userID, _ := c.jwtService.GetUserIDByToken(token)
+	userID, ok := ctx.MustGet("userID").(uint64)
+	if !ok {
+		response := common.BuildErrorResponse("Failed to get transaction history", "userID not found", common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
 	err := c.userService.DeleteUser(ctx.Request.Context(), userID)
 	if err != nil {
 		res := common.BuildErrorResponse("Failed to delete user", err.Error(), common.EmptyObj{})

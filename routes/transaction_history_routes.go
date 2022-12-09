@@ -11,8 +11,8 @@ import (
 func TransactionHistoryRoutes(router *gin.Engine, transactionHistoryController controller.TransactionHistoryController, jwtService service.JWTService) {
 	transactionHistoryRoutes := router.Group("/transactions")
 	{
-		transactionHistoryRoutes.GET("/my-transactions", transactionHistoryController.GetTransactionHistoryByUserID)
+		transactionHistoryRoutes.GET("/my-transactions", middleware.Authenticate(jwtService, "member"), transactionHistoryController.GetTransactionHistoryByUserID)
 		transactionHistoryRoutes.GET("/user-transactions", middleware.Authenticate(jwtService, "admin"), transactionHistoryController.GetAllTransactionHistory)
-		transactionHistoryRoutes.POST("", transactionHistoryController.CreateTransactionHistory)
+		transactionHistoryRoutes.POST("", middleware.Authenticate(jwtService, "member"), transactionHistoryController.CreateTransactionHistory)
 	}
 }

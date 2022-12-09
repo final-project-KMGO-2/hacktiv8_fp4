@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"hacktiv8_fp_2/common"
 	"hacktiv8_fp_2/service"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v4"
 )
 
 func Authenticate(jwtService service.JWTService, role string) gin.HandlerFunc {
@@ -27,10 +25,12 @@ func Authenticate(jwtService service.JWTService, role string) gin.HandlerFunc {
 		}
 		authHeader = strings.Replace(authHeader, "Bearer ", "", -1)
 		token, err := jwtService.ValidateToken(authHeader)
+		if err != nil {
+			response := common.BuildErrorResponse("Failed to process request", "Error validating token", nil)
+			c.AbortWithStatusJSON(http.StatusForbidden, response)
+			return
+		}
 		if !token.Valid {
-			claims := token.Claims.(jwt.MapClaims)
-			fmt.Println(claims)
-			log.Println(err)
 			response := common.BuildErrorResponse("Access denied", "You dont have access", nil)
 			c.AbortWithStatusJSON(http.StatusForbidden, response)
 			return
@@ -43,7 +43,14 @@ func Authenticate(jwtService service.JWTService, role string) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("token", authHeader)
+		userID, err := jwtService.GetUserIDByToken(string(authHeader))
+		if err != nil {
+			response := common.BuildErrorResponse("Failed to process request", "Failed to get userID", nil)
+			c.AbortWithStatusJSON(http.StatusForbidden, response)
+			return
+		}
+		fmt.Println(userID)
+		c.Set("userID", userID)
 		c.Next()
 	}
 }
