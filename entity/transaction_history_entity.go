@@ -14,4 +14,5 @@ type TransactionHistory struct {
 type TransactionHistoryCreate struct {
 	ProductID uint64 `json:"product_id" binding:"required"`
 	Quantity  uint64 `json:"quantity" binding:"required"`
+	UserID    uint64 `json:"userID"`
 }
