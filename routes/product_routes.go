@@ -11,9 +11,9 @@ import (
 func GenerateProductRoutes(router *gin.Engine, productController controller.ProductController, jwtService service.JWTService) {
 	productRoutes := router.Group("/products")
 	{
-		productRoutes.POST("", middleware.Authenticate(jwtService, "member"), productController.AddNewProduct)
+		productRoutes.POST("", middleware.Authenticate(jwtService, "admin"), productController.AddNewProduct)
 		productRoutes.GET("", middleware.Authenticate(jwtService, "member"), productController.GetAllProducts)
-		productRoutes.PUT("/:productId", middleware.Authenticate(jwtService, "member"), productController.UpdateProductByID)
-		productRoutes.DELETE("/:productId", middleware.Authenticate(jwtService, "member"), productController.DeleteProductById)
+		productRoutes.PUT("/:productId", middleware.Authenticate(jwtService, "admin"), productController.UpdateProductByID)
+		productRoutes.DELETE("/:productId", middleware.Authenticate(jwtService, "admin"), productController.DeleteProductById)
 	}
 }
