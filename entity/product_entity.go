@@ -18,6 +18,7 @@ type ProductCreate struct {
 }
 
 type ProductUpdate struct {
+	ID         uint64 `json:"id"`
 	Title      string `json:"title" binding:"required"`
 	Price      uint64 `json:"price" binding:"required,min=0,max=50000000"`
 	Stock      uint64 `json:"stock" binding:"required,min=5"`

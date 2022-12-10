@@ -3,12 +3,11 @@ package routes
 import (
 	"hacktiv8_fp_2/controller"
 	"hacktiv8_fp_2/middleware"
-	"hacktiv8_fp_2/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-func UserRoutes(router *gin.Engine, userController controller.UserController, jwtService service.JWTService) {
+func UserRoutes(router *gin.Engine, userController controller.UserController, jwtService middleware.JWTService) {
 	userRoutes := router.Group("/users")
 	{
 		userRoutes.POST("/register", userController.Register)

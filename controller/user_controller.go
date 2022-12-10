@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"hacktiv8_fp_2/common"
 	"hacktiv8_fp_2/entity"
+	"hacktiv8_fp_2/middleware"
 	"hacktiv8_fp_2/service"
 	"net/http"
 	"strconv"
@@ -21,10 +22,10 @@ type UserController interface {
 type userController struct {
 	userService service.UserService
 	authService service.AuthService
-	jwtService  service.JWTService
+	jwtService  middleware.JWTService
 }
 
-func NewUserController(us service.UserService, as service.AuthService, js service.JWTService) UserController {
+func NewUserController(us service.UserService, as service.AuthService, js middleware.JWTService) UserController {
 	return &userController{
 		userService: us,
 		authService: as,
@@ -46,7 +47,13 @@ func (c *userController) Register(ctx *gin.Context) {
 		return
 	}
 
-	isDuplicateEmail, _ := c.authService.CheckEmailDuplicate(ctx.Request.Context(), user.Email)
+	isDuplicateEmail, err := c.authService.CheckEmailDuplicate(ctx.Request.Context(), user.Email)
+	if err != nil {
+		response := common.BuildErrorResponse("Failed to process request", err.Error(), common.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
 	if isDuplicateEmail {
 		response := common.BuildErrorResponse("Failed to process request", "Duplicate Email", common.EmptyObj{})
 		ctx.JSON(http.StatusConflict, response)
@@ -71,7 +78,13 @@ func (c *userController) Login(ctx *gin.Context) {
 		return
 	}
 
-	authResult, _ := c.authService.VerifyCredential(ctx.Request.Context(), userLogin.Email, userLogin.Password)
+	authResult, err := c.authService.VerifyCredential(ctx.Request.Context(), userLogin.Email, userLogin.Password)
+	if err != nil {
+		response := common.BuildErrorResponse("Failed to process request", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
 	if !authResult {
 		response := common.BuildErrorResponse("Error Logging in", "Invalid Credentials", nil)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)

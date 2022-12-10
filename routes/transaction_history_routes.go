@@ -3,12 +3,11 @@ package routes
 import (
 	"hacktiv8_fp_2/controller"
 	"hacktiv8_fp_2/middleware"
-	"hacktiv8_fp_2/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-func TransactionHistoryRoutes(router *gin.Engine, transactionHistoryController controller.TransactionHistoryController, jwtService service.JWTService) {
+func TransactionHistoryRoutes(router *gin.Engine, transactionHistoryController controller.TransactionHistoryController, jwtService middleware.JWTService) {
 	transactionHistoryRoutes := router.Group("/transactions")
 	{
 		transactionHistoryRoutes.GET("/my-transactions", middleware.Authenticate(jwtService, "member"), transactionHistoryController.GetTransactionHistoryByUserID)

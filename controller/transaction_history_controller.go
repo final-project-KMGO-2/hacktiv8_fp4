@@ -3,6 +3,7 @@ package controller
 import (
 	"hacktiv8_fp_2/common"
 	"hacktiv8_fp_2/entity"
+	"hacktiv8_fp_2/middleware"
 	"hacktiv8_fp_2/service"
 	"net/http"
 
@@ -16,11 +17,11 @@ type TransactionHistoryController interface {
 }
 
 type transactionHistoryController struct {
-	jwtService                service.JWTService
+	jwtService                middleware.JWTService
 	transactionHistoryService service.TransactionHistoryService
 }
 
-func NewTransactionHistoryController(ths service.TransactionHistoryService, js service.JWTService) TransactionHistoryController {
+func NewTransactionHistoryController(ths service.TransactionHistoryService, js middleware.JWTService) TransactionHistoryController {
 	return &transactionHistoryController{
 		transactionHistoryService: ths,
 		jwtService:                js,

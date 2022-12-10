@@ -3,6 +3,7 @@ package controller
 import (
 	"hacktiv8_fp_2/common"
 	"hacktiv8_fp_2/entity"
+	"hacktiv8_fp_2/middleware"
 	"hacktiv8_fp_2/service"
 	"net/http"
 	"strconv"
@@ -17,14 +18,14 @@ type ProductController interface {
 	DeleteProductById(ctx *gin.Context)
 }
 
-// TODO: buy new product 
+// TODO: buy new product
 
 type productController struct {
-	jwtService service.JWTService
+	jwtService     middleware.JWTService
 	productService service.ProductService
 }
 
-func NewProductController(jt service.JWTService, ps service.ProductService) ProductController {
+func NewProductController(jt middleware.JWTService, ps service.ProductService) ProductController {
 	return &productController{jwtService: jt, productService: ps}
 }
 
@@ -60,7 +61,7 @@ func (ps *productController) GetAllProducts(ctx *gin.Context) {
 }
 
 func (ps *productController) UpdateProductByID(ctx *gin.Context) {
-	id, err := strconv.ParseInt(ctx.Param("productId"), 10, 64)
+	id, err := strconv.ParseUint(ctx.Param("productId"), 10, 64)
 	if err != nil {
 		response := common.BuildErrorResponse("Something went wrong", err.Error(), common.EmptyObj{})
 		ctx.JSON(http.StatusBadRequest, response)
@@ -75,7 +76,7 @@ func (ps *productController) UpdateProductByID(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
-
+	productUpdate.ID = id
 	data, err := ps.productService.UpdateProductById(ctx.Request.Context(), productUpdate, uint64(id))
 
 	if err != nil {

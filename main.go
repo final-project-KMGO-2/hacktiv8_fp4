@@ -4,6 +4,7 @@ import (
 	"context"
 	"hacktiv8_fp_2/config"
 	"hacktiv8_fp_2/controller"
+	"hacktiv8_fp_2/middleware"
 	"hacktiv8_fp_2/repository"
 	"hacktiv8_fp_2/routes"
 	"hacktiv8_fp_2/service"
@@ -30,7 +31,7 @@ func main() {
 	productRepository := repository.NewProductRepo(db)
 	categoryRepository := repository.NewCategoryRepository(db)
 
-	jwtService := service.NewJWTService()
+	jwtService := middleware.NewJWTService()
 	userService := service.NewUserService(userRepository)
 	authService := service.NewAuthService(userRepository)
 	transactionHistoryService := service.NewTransactionHistoryService(transactionHistoryRepository)
@@ -43,14 +44,12 @@ func main() {
 	categoryController := controller.NewCategoryController(categoryService, jwtService)
 
 	defer config.CloseDatabaseConnection(db)
-	// gin.SetMode(gin.ReleaseMode)
 	server := gin.Default()
 
 	routes.UserRoutes(server, authController, jwtService)
 	routes.TransactionHistoryRoutes(server, transactionHistoryController, jwtService)
 	routes.GenerateProductRoutes(server, productController, jwtService)
 	routes.CategoryRoutes(server, categoryController, jwtService)
-	// routes.TaskRoutes(server, taskController, jwtService, taskService)
 
 	port := os.Getenv("PORT")
 	if port == "" {

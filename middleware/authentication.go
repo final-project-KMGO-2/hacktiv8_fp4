@@ -1,16 +1,14 @@
 package middleware
 
 import (
-	"fmt"
 	"hacktiv8_fp_2/common"
-	"hacktiv8_fp_2/service"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func Authenticate(jwtService service.JWTService, role string) gin.HandlerFunc {
+func Authenticate(jwtService JWTService, role string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -49,7 +47,6 @@ func Authenticate(jwtService service.JWTService, role string) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusForbidden, response)
 			return
 		}
-		fmt.Println(userID)
 		c.Set("userID", userID)
 		c.Next()
 	}

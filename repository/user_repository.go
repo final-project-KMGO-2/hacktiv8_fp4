@@ -39,7 +39,7 @@ func (db *userConnection) CreateUser(ctx context.Context, user entity.User) (ent
 
 func (db *userConnection) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
 	var user entity.User
-	tx := db.connection.Where(("email = ?"), email).Take(&user)
+	tx := db.connection.Where(("email = ?"), email).Find(&user)
 	if tx.Error != nil {
 		return user, tx.Error
 	}
@@ -57,7 +57,7 @@ func (db *userConnection) GetUserById(ctx context.Context, id uint64) (entity.Us
 
 func (db *userConnection) GetUserByUsername(ctx context.Context, username string) (entity.User, error) {
 	var user entity.User
-	tx := db.connection.Where(("username = ?"), username).Take(&user)
+	tx := db.connection.Where(("username = ?"), username).Find(&user)
 	if tx.Error != nil {
 		return user, tx.Error
 	}

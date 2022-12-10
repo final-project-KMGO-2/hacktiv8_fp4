@@ -49,7 +49,12 @@ func (db *transactionHistoryConnection) RollbackTx(ctx context.Context, tx *gorm
 }
 
 func (db *transactionHistoryConnection) CreateTransactionHistory(ctx context.Context, transactionHistory entity.TransactionHistory) (entity.TransactionHistory, error) {
-	tx := db.connection.Create(&transactionHistory)
+	tx := db.connection.Debug().Preload("Product").Create(&transactionHistory)
+	if tx.Error != nil {
+		return entity.TransactionHistory{}, tx.Error
+	}
+
+	tx = db.connection.Where(("id = ?"), transactionHistory.ID).Preload("Product").Find(&transactionHistory)
 	if tx.Error != nil {
 		return entity.TransactionHistory{}, tx.Error
 	}
@@ -58,7 +63,7 @@ func (db *transactionHistoryConnection) CreateTransactionHistory(ctx context.Con
 
 func (db *transactionHistoryConnection) GetAllTransactionHistory(ctx context.Context) ([]entity.TransactionHistory, error) {
 	var transactionHistoryList []entity.TransactionHistory
-	tx := db.connection.Find(&transactionHistoryList)
+	tx := db.connection.Preload("Product").Find(&transactionHistoryList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -67,7 +72,7 @@ func (db *transactionHistoryConnection) GetAllTransactionHistory(ctx context.Con
 
 func (db *transactionHistoryConnection) GetTransactionHistoryByUserID(ctx context.Context, userID uint64) ([]entity.TransactionHistory, error) {
 	var transactionHistoryList []entity.TransactionHistory
-	tx := db.connection.Where(("user_id = ?"), userID).Find(&transactionHistoryList)
+	tx := db.connection.Where(("user_id = ?"), userID).Preload("Product").Find(&transactionHistoryList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

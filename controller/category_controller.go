@@ -1,14 +1,15 @@
 package controller
 
 import (
- 	"hacktiv8_fp_2/common"
- 	"hacktiv8_fp_2/entity"
- 	"hacktiv8_fp_2/service"
- 	"net/http"
- 	"strconv"
+	"hacktiv8_fp_2/common"
+	"hacktiv8_fp_2/entity"
+	"hacktiv8_fp_2/middleware"
+	"hacktiv8_fp_2/service"
+	"net/http"
+	"strconv"
 
- 	"github.com/gin-gonic/gin"
- )
+	"github.com/gin-gonic/gin"
+)
 
 type CategoryController interface {
 	CreateCategory(ctx *gin.Context)
@@ -19,10 +20,10 @@ type CategoryController interface {
 
 type categoryController struct {
 	categoryService service.CategoryService
-	jwtService      service.JWTService
+	jwtService      middleware.JWTService
 }
 
-func NewCategoryController(cas service.CategoryService, js service.JWTService) CategoryController {
+func NewCategoryController(cas service.CategoryService, js middleware.JWTService) CategoryController {
 	return &categoryController{
 		categoryService: cas,
 		jwtService:      js,
@@ -87,12 +88,12 @@ func (ca *categoryController) PatchCategory(ctx *gin.Context) {
 func (ca *categoryController) DeleteCategory(ctx *gin.Context) {
 	id := ctx.Param("id")
 	categoryID, _ := strconv.ParseUint(id, 10, 64)
- 	err := ca.categoryService.DeleteCategory(ctx.Request.Context(), categoryID)
- 	if err != nil {
+	err := ca.categoryService.DeleteCategory(ctx.Request.Context(), categoryID)
+	if err != nil {
 		response := common.BuildErrorResponse("Failed to delete comment", err.Error(), nil)
- 		ctx.JSON(http.StatusBadRequest, response)
- 		return
- 	}
- 	res := common.BuildResponse(true, "Category has been successfully deleted", nil)
- 	ctx.JSON(http.StatusAccepted, res)
- }
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+	res := common.BuildResponse(true, "Category has been successfully deleted", nil)
+	ctx.JSON(http.StatusAccepted, res)
+}

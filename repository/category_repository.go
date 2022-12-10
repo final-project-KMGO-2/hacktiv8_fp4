@@ -38,7 +38,7 @@ func (db *categoryConnection) CreateCategory(ctx context.Context, category entit
 // GetCategory implements CategoryRepository
 func (db *categoryConnection) GetCategory(ctx context.Context) ([]entity.Category, error) {
 	var category []entity.Category
-	tx := db.connection.Find(&category)
+	tx := db.connection.Preload("Product").Find(&category)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

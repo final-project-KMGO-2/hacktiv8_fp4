@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"hacktiv8_fp_2/entity"
 	"hacktiv8_fp_2/repository"
 
@@ -71,7 +70,6 @@ func (s *transactionHistoryService) CreateTransactionHistory(ctx context.Context
 	}
 
 	// check user balance
-	fmt.Println(transactionHistoryEntity)
 	if balance < (product.Price * transactionHistoryEntity.Quantity) {
 		if err := s.transactionHistoryRepository.CommitTx(ctx, tx); err != nil {
 			return entity.TransactionHistory{}, err

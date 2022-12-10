@@ -44,7 +44,7 @@ func (pr *productRepository) GetProductByID(ctx context.Context, productID uint6
 
 func (pr *productRepository) SelectAllProducts(ctx context.Context) ([]entity.Product, error) {
 	products := []entity.Product{}
-	tx := pr.connection.Preload("User").Find(&products)
+	tx := pr.connection.Find(&products)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
